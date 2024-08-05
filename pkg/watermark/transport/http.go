@@ -30,19 +30,19 @@ func NewHTTPHandler(ep endpoint.Set) http.Handler {
 	))
 
 	m.Handle("/addDocument", httptransport.NewServer(
-		ep.StatusEndpoint,
+		ep.AddDocumentEndpoint,
 		decodeHTTPAddDocumentRequest,
 		encodeResponse,
 	))
 
 	m.Handle("/get", httptransport.NewServer(
-		ep.StatusEndpoint,
+		ep.GetEndpoint,
 		decodeHTTPGetRequest,
 		encodeResponse,
 	))
 
 	m.Handle("/watermark", httptransport.NewServer(
-		ep.StatusEndpoint,
+		ep.WatermarkEndpoint,
 		decodeHTTPWatermarkRequest,
 		encodeResponse,
 	))

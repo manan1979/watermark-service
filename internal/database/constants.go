@@ -3,7 +3,7 @@ package database
 const (
 	DefaultDatabase = "gorm"
 	DefaultDBUser   = "gorm"
-	DefaultHost     = "myhost"
-	DefaultPort     = "myport"
+	DefaultHost     = "localhost"
+	DefaultPort     = "5432"
 	DefaultPassword = "mypassword"
 )

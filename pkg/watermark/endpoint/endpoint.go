@@ -53,7 +53,7 @@ func MakeStatusEndpoint(svc watermark.Service) endpoint.Endpoint {
 
 func MakeAddDocumentEndpoint(svc watermark.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(AddDocumentRequest)
+		req := request.(*AddDocumentRequest)
 		ticketID, err := svc.AddDocument(ctx, req.Document)
 		if err != nil {
 			return AddDocumentResponse{TicketID: ticketID, Err: err.Error()}, nil
@@ -75,7 +75,7 @@ func MakeWatermarkEndpoint(svc watermark.Service) endpoint.Endpoint {
 
 func MakeServiceStatusEndpoint(svc watermark.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		_ = request.(WatermarkRequest)
+		_ = request.(ServiceStatusRequest)
 		code, err := svc.ServiceStatus(ctx)
 		if err != nil {
 			return ServiceStatusResponse{Code: code, Err: err.Error()}, nil
