@@ -12,7 +12,7 @@ import (
 type Document struct {
 	gorm.Model
 	TicketID  string `gorm:"type:varchar(100);unique_index"`
-	Content   string `gorm:"type:varchar(100)"`
+	Content   string `gorm:"type:varchar(400)"`
 	Title     string `gorm:"type:varchar(100)"`
 	Author    string `gorm:"type:varchar(100)"`
 	Topic     string `gorm:"type:varchar(100)"`

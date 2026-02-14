@@ -1,6 +1,7 @@
 package internal
 
 type Document struct {
+	TicketID  string `json:"id"`
 	Content   string `json:"context"`
 	Title     string `json:"title"`
 	Author    string `json:"author"`

@@ -19,6 +19,13 @@ type Set struct {
 	WatermarkEndpoint     endpoint.Endpoint
 }
 
+type PaginationResponse struct {
+	Documents   []internal.Document `json:"documents"`
+	Total       int64               `json:"total"`
+	CurrentPage int                 `json:"current_page"`
+	TotalPages  int                 `json:"total_pages"`
+}
+
 func NewEndpointSet(svc watermark.Service) Set {
 	return Set{
 		GetEndpoint:           MakeGetEndpoint(svc),
@@ -32,17 +39,30 @@ func NewEndpointSet(svc watermark.Service) Set {
 func MakeGetEndpoint(svc watermark.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(GetRequest)
-		docs, err := svc.Get(ctx, req.Filters...)
+		response, err := svc.Get(ctx, req.Page, req.PageSize, req.Filters...)
 		if err != nil {
-			return GetResponse{docs, err.Error()}, nil
+			return GetResponse{
+				Documents:   nil,
+				Total:       0,
+				CurrentPage: req.Page,
+				TotalPages:  0,
+				Err:         err.Error(),
+			}, nil
 		}
-		return GetResponse{docs, ""}, nil
+		return GetResponse{
+			Documents:   response.Documents,
+			Total:       response.Total,
+			CurrentPage: req.Page,
+			TotalPages:  response.TotalPages,
+			Err:         "",
+		}, nil
 	}
+
 }
 
 func MakeStatusEndpoint(svc watermark.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(StatusRequest)
+		req := request.(*StatusRequest)
 		status, err := svc.Status(ctx, req.TicketID)
 		if err != nil {
 			return StatusResponse{Status: status, Err: err.Error()}, nil
@@ -56,15 +76,29 @@ func MakeAddDocumentEndpoint(svc watermark.Service) endpoint.Endpoint {
 		req := request.(*AddDocumentRequest)
 		ticketID, err := svc.AddDocument(ctx, req.Document)
 		if err != nil {
-			return AddDocumentResponse{TicketID: ticketID, Err: err.Error()}, nil
+			return AddDocumentResponse{
+				TicketID:  ticketID.TicketID,
+				Content:   ticketID.Content,
+				Title:     ticketID.Author,
+				Topic:     ticketID.Title,
+				Author:    ticketID.Author,
+				Watermark: ticketID.Watermark,
+				Err:       err.Error()}, nil
 		}
-		return AddDocumentResponse{TicketID: ticketID, Err: ""}, nil
+		return AddDocumentResponse{
+			TicketID:  ticketID.TicketID,
+			Content:   ticketID.Content,
+			Title:     ticketID.Author,
+			Topic:     ticketID.Title,
+			Author:    ticketID.Author,
+			Watermark: ticketID.Watermark,
+		}, nil
 	}
 }
 
 func MakeWatermarkEndpoint(svc watermark.Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(WatermarkRequest)
+		req := request.(*WatermarkRequest)
 		code, err := svc.Watermark(ctx, req.TicketID, req.Mark)
 		if err != nil {
 			return WatermarkResponse{Code: code, Err: err.Error()}, nil
@@ -84,19 +118,28 @@ func MakeServiceStatusEndpoint(svc watermark.Service) endpoint.Endpoint {
 	}
 }
 
-func (s *Set) Get(ctx context.Context, filters ...internal.Filter) ([]internal.Document, error) {
+func (s *Set) Get(ctx context.Context, page, pageSize int, filters ...internal.Filter) (PaginationResponse, error) {
 
-	resp, err := s.GetEndpoint(ctx, GetRequest{Filters: filters})
+	resp, err := s.GetEndpoint(ctx, GetRequest{
+		Filters:  filters,
+		Page:     page,
+		PageSize: pageSize,
+	})
 	if err != nil {
-		return []internal.Document{}, err
+		return PaginationResponse{}, err
 	}
 
 	getResp := resp.(GetResponse)
 	if getResp.Err != "" {
-		return []internal.Document{}, errors.New(getResp.Err)
+		return PaginationResponse{}, errors.New(getResp.Err)
 	}
-	return getResp.Documents, nil
 
+	return PaginationResponse{
+		Documents:   getResp.Documents,
+		Total:       getResp.Total,
+		CurrentPage: getResp.CurrentPage,
+		TotalPages:  getResp.TotalPages,
+	}, nil
 }
 
 func (s *Set) ServiceStatus(ctx context.Context) (int, error) {

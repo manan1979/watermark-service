@@ -52,7 +52,7 @@ func main() {
 	fmt.Println("Database auto-migrated")
 
 	var (
-		service     = watermark.NewService()
+		service     = watermark.NewService(db)
 		eps         = endpoint.NewEndpointSet(service)
 		httpHandler = transport.NewHTTPHandler(eps)
 		grpcServer  = transport.NewGRPCServer(eps)

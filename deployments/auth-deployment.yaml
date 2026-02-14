@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-deployment 
+spec:
+  replica: 3
+  selector: 
+    matchLables:
+      app: auth
+  template: 
+    metadata: 
+      labels:
+        app: auth
+    spec:
+      containers:
+      - namee: auth
+        image: #TODO - add image 
+        ports:
+        - containerPort: 8080 

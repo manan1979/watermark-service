@@ -1,0 +1,19 @@
+apViVersion: apps/v1
+kind: Deployment
+metadata:
+  name: watermark-deployment 
+spec:
+  replica: 3
+  selector:
+    matchLabels:
+      app: watermark
+  template:
+    metadata:
+      labels:
+        app: watermark  
+    spec:
+      containers:
+      - name: watermark
+        image: #TODO - add image
+        ports:
+        - containerPort: 8080
